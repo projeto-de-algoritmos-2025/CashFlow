@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashFlow - Simulador de Caixa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="nav-brand">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                <span>CashFlow</span>
+            </a>
+            <div class="nav-menu">
+                <a href="#" class="nav-link active" id="nav-dashboard">Home</a>
+                <a href="#" class="nav-link" id="nav-relatorios">Relatórios</a>
+                <a href="#" class="nav-link" id="nav-sobre">Sobre</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="dashboard-view">
+        <div class="container page-container">
+            <header>
+                <h1>Troco Otimizado</h1>
+                <p>Calcule o troco ótimo com estoque de caixa limitado; dessa forma você usa a menor quantidade de notas e moedas possíveis</p>
+            </header>
+            <main class="main-grid">
+                <section class="card" id="cash-drawer-manager">
+                    <h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" y2="9"></line></svg>
+                        Gerenciar Caixa
+                    </h2>
+                    <div id="cash-drawer-inputs"></div>
+                    <button id="btn-load-cash">Carregar Caixa</button>
+                    <div id="setup-feedback" class="feedback"></div>
+                </section>
+                <section class="card" id="transaction-terminal">
+                    <h2>
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        Terminal de Transação
+                    </h2>
+                    <div class="input-group"><label for="total-compra">Total da Compra (R$)</label><input type="number" id="total-compra" placeholder="Ex: 42.50" step="0.01"></div>
+                    <div class="input-group"><label for="valor-pago">Valor Pago (R$)</label><input type="number" id="valor-pago" placeholder="Ex: 50.00" step="0.01"></div>
+                    <button id="btn-calculate-change">Calcular Troco</button>
+                </section>
+                <section class="card" id="change-display">
+                    <h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        Troco a ser Dado
+                    </h2>
+                    <div class="display-screen"><span class="display-label">TROCO TOTAL</span><span id="total-change-value" class="display-value">R$ 0,00</span></div>
+                    <div id="change-breakdown"><p class="placeholder-text">Aguardando cálculo...</p></div>
+                    <div id="calculation-feedback" class="feedback error"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div id="reports-view" class="hidden">
+        <div class="container page-container">
+            <header class="reports-header">
+                <h1>Relatório de Operações</h1>
+                <button id="btn-export-csv">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Exportar para CSV
+                </button>
+            </header>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Tipo de Operação</th>
+                            <th class="text-center">R$ 100</th>
+                            <th class="text-center">R$ 50</th>
+                            <th class="text-center">R$ 20</th>
+                            <th class="text-center">R$ 10</th>
+                            <th class="text-center">R$ 5</th>
+                            <th class="text-center">R$ 2</th>
+                            <th class="text-center">R$ 1</th>
+                            <th class="text-center">R$ 0,50</th>
+                            <th class="text-center">R$ 0,25</th>
+                            <th class="text-center">R$ 0,10</th>
+                            <th class="text-center">R$ 0,05</th>
+                            <th class="text-center">R$ 0,01</th>
+                            <th>Saldo Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="about-view" class="hidden">
+        <div class="container page-container">
+            <header>
+                <h1>Sobre o Projeto CashFlow</h1>
+            </header>
+            <main class="about-content">
+                <section>
+                    <h2>O Projeto</h2>
+                    <p>
+                        O <strong>CashFlow</strong> é um sistema de Ponto de Venda (PDV) desenvolvido pelos alunos <a href="https://github.com/caiolamego"><strong>Caio Magalhães Lamego</strong></a> e <a href="https://github.com/MatheussBrant"><strong>Matheus de Siqueira Brant</strong></a> da <strong>Universidade de Brasília</strong>, como um projeto para a disciplina de Projeto de Algoritmos. Seu principal objetivo é demonstrar a aplicação prática de algoritmos de <strong>Programação Dinâmica</strong> para resolver um problema do mundo real: o cálculo do troco otimizado.
+                    </p>
+                    <p>
+                        O algoritmo central utilizado é uma solução para o <strong>Problema do Troco com Moedas Limitadas</strong> (Bounded Coin Change Problem), que é uma variação do clássico Problema da Mochila. Dada uma quantidade finita de notas e moedas em um caixa, o sistema calcula a combinação que utiliza o menor número de cédulas para fornecer um troco exato, garantindo a eficiência das operações do caixa.
+                    </p>
+                </section>
+                <section>
+                    <h2>Como Usar</h2>
+                    <ol>
+                        <li>
+                            <h3>1. Carregar o Caixa</h3>
+                            <p>Na tela principal (Home), comece pela seção <strong>"Gerenciar Caixa"</strong>. Informe a quantidade de cada nota e moeda disponível no seu caixa e clique no botão <strong>"Carregar Caixa"</strong>. Essa ação inicializa o sistema com o seu saldo. Uma operação de "Carregamento" será registrada no histórico.</p>
+                        </li>
+                        <li>
+                            <h3>2. Realizar uma Transação</h3>
+                            <p>Na seção <strong>"Terminal de Transação"</strong>, insira o "Total da Compra" e o "Valor Pago" pelo cliente. Ao clicar em <strong>"Calcular Troco"</strong>, o sistema exibirá o troco total e o detalhamento das notas/moedas a serem devolvidas na seção "Troco a ser Dado". O seu caixa será atualizado automaticamente, e uma operação de "Retirada" será registrada.</p>
+                        </li>
+                        <li>
+                            <h3>3. Consultar o Relatório</h3>
+                            <p>Clique no link <strong>"Relatórios"</strong> na barra de navegação. Uma tabela exibirá o histórico completo de todas as operações (carregamentos e trocos). Você pode ver o detalhe de cada transação e o saldo do caixa após cada uma delas. Para salvar os dados, clique em <strong>"Exportar para CSV"</strong>.</p>
+                        </li>
+                    </ol>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
