@@ -22,3 +22,35 @@ mapa_denominacoes_str = {
 def calcular_saldo_total():
     """Calcula o valor total em dinheiro no caixa."""
     return sum(den * qtd for den, qtd in caixa_disponivel.items()) / 100.0
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# --- NOVA ROTA PARA OBTER O RELATÓRIO ---
+@app.route('/api/relatorio', methods=['GET'])
+def get_relatorio():
+    """Retorna o histórico de operações."""
+    return jsonify(historico_operacoes)
+
+@app.route('/api/setup_caixa', methods=['POST'])
+def setup_caixa():
+    global caixa_disponivel, historico_operacoes
+    dados = request.get_json()
+    try:
+        caixa_disponivel = {int(k): int(v) for k, v in dados.items()}
+        
+        # --- LOG DA OPERAÇÃO ---
+        log_entry = {
+            "timestamp": datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
+            "tipo": "Carregamento de Caixa",
+            "detalhes": caixa_disponivel.copy(),
+            "saldo_final": calcular_saldo_total()
+        }
+        historico_operacoes.append(log_entry)
+        # --- FIM DO LOG ---
+
+        print(f"Caixa configurado: {caixa_disponivel}")
+        return jsonify({"status": "sucesso", "mensagem": "Caixa configurado com sucesso!"})
+    except (ValueError, TypeError):
+        return jsonify({"status": "erro", "mensagem": "Dados de configuração inválidos."}), 400
