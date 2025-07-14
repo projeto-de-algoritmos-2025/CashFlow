@@ -31,7 +31,7 @@ O CashFlow é um simulador de caixa desenvolvido em Flask que permite calcular o
     - source .venv/bin/activate 
 - Instale as dependências 
     - pip install -r requirements.txt
--   rode o comando python3 app.py (LINUX) ou python app.py
+-   rode o comando python3 app.py 
 -   Acesse o localhost da porta 5000 (visível no terminal)
 
 ## Uso 
