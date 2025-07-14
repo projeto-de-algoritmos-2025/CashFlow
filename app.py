@@ -54,3 +54,62 @@ def setup_caixa():
         return jsonify({"status": "sucesso", "mensagem": "Caixa configurado com sucesso!"})
     except (ValueError, TypeError):
         return jsonify({"status": "erro", "mensagem": "Dados de configuração inválidos."}), 400
+    
+
+
+@app.route('/api/calcular_troco', methods=['POST'])
+def calcular_troco_endpoint():
+    global caixa_disponivel, historico_operacoes
+    dados = request.get_json()
+    try:
+        valor_troco_reais = float(dados['troco'])
+        valor_troco_centavos = int(round(valor_troco_reais * 100))
+    except (ValueError, KeyError):
+        return jsonify({"status": "erro", "mensagem": "Valor de troco inválido."}), 400
+    if valor_troco_centavos < 0:
+        return jsonify({"status": "erro", "mensagem": "O valor pago não pode ser menor que o total da compra."}), 400
+    if valor_troco_centavos == 0:
+        return jsonify({"status": "sucesso", "troco": {}, "caixa_atualizado": caixa_disponivel})
+
+    dp = [None] * (valor_troco_centavos + 1)
+    dp[0] = collections.Counter()
+    for den in denominacoes:
+        qtd_disponivel = caixa_disponivel.get(den, 0)
+        if qtd_disponivel <= 0: continue
+        for valor in range(den, valor_troco_centavos + 1):
+            valor_anterior = valor - den
+            if dp[valor_anterior] is not None:
+                if dp[valor_anterior][den] < qtd_disponivel:
+                    nova_combinacao = dp[valor_anterior].copy()
+                    nova_combinacao[den] += 1
+                    if dp[valor] is None or sum(nova_combinacao.values()) < sum(dp[valor].values()):
+                        dp[valor] = nova_combinacao
+    
+    solucao_final = dp[valor_troco_centavos]
+    if solucao_final is None:
+        return jsonify({"status": "erro", "mensagem": "Não é possível dar o troco exato com as notas/moedas disponíveis."})
+
+    troco_final = dict(solucao_final)
+    
+    # Atualiza o caixa real
+    for den, qtd in troco_final.items():
+        caixa_disponivel[den] -= qtd
+    
+    # --- LOG DA OPERAÇÃO ---
+    log_entry = {
+        "timestamp": datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
+        "tipo": "Retirada para Troco",
+        "detalhes": troco_final,
+        "saldo_final": calcular_saldo_total()
+    }
+    historico_operacoes.append(log_entry)
+    # --- FIM DO LOG ---
+
+    return jsonify({
+        "status": "sucesso",
+        "troco": troco_final,
+        "caixa_atualizado": caixa_disponivel
+    })
+
+if __name__ == '__main__':
+    app.run(debug=True)
