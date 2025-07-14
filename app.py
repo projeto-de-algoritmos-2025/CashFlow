@@ -18,3 +18,7 @@ mapa_denominacoes_str = {
     100: "R$ 1,00", 50: "R$ 0.50", 25: "R$ 0.25",
     10: "R$ 0.10", 5: "R$ 0.05", 1: "R$ 0.01"
 }
+
+def calcular_saldo_total():
+    """Calcula o valor total em dinheiro no caixa."""
+    return sum(den * qtd for den, qtd in caixa_disponivel.items()) / 100.0
